@@ -1,10 +1,10 @@
-#include <cctype>
-#include <print>
 #include <string>
+#include <cctype>
 #include <filesystem>
+#include <print>
+#include <vector>
 #include <thread>
 #include <future>
-#include <vector>
 #include "file-reader.hxx"
 
 namespace fs = std::filesystem;
@@ -81,14 +81,15 @@ int main(int argc, char* argv[]) {
 
     for (auto e : fs::directory_iterator{dir}) {
         if (not e.is_regular_file()) continue;
+        if (e.path().extension().string() != ".txt") continue;
 
         auto task = Task{e.path()};
         results.push_back(task.result.get_future());
         workers.emplace_back(std::jthread{std::move(task)});
     }
 
-    auto fileno = 1U;
     std::println("#) {}", Count::header());
+    auto fileno = 1U;
     for (auto& f : results) {
         auto cnt = f.get();
         std::println("{}) {}", fileno++, cnt.to_string());
