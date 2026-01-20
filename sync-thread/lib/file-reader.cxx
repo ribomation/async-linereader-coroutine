@@ -6,8 +6,8 @@ namespace ribomation::io {
     auto FileReader::next_line()  -> std::optional<std::string> {
         auto line = std::string{};
         line.reserve(256);
-        std::getline(file, line);
-        if (file.good()) return line;
+        
+        if (std::getline(file, line)) return line;
         return std::nullopt;
     }
 

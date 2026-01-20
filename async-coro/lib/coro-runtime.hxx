@@ -48,17 +48,17 @@ namespace ribomation::io {
 
         CoroScheduler sched{};
         TaskPool pool{};
-        std::atomic<std::size_t> active_tasks{0};
+        std::atomic<std::size_t> liveness_count{0};
 
         std::unordered_map<SpawnedKeyType, SpawnedEntry> spawned{};
         std::mutex entry{};
 
-        bool has_more_work() const {
-            return not sched.is_empty() || active_tasks.load() == 0U;
+        bool should_wake() const {
+            return not sched.is_empty() || liveness_count.load() == 0U;
         }
 
         bool no_more_work() const {
-            return active_tasks.load() == 0U && sched.is_empty();
+            return liveness_count.load() == 0U && sched.is_empty();
         }
 
     public:
@@ -74,11 +74,11 @@ namespace ribomation::io {
 
     private:
         void acquire_liveness() {
-            active_tasks.fetch_add(1U, std::memory_order_relaxed);
+            liveness_count.fetch_add(1U, std::memory_order_relaxed);
         }
 
         void release_liveness() {
-            active_tasks.fetch_sub(1U, std::memory_order_relaxed);
+            liveness_count.fetch_sub(1U, std::memory_order_relaxed);
             sched.not_empty.notify_all();
         }
     };
