@@ -18,12 +18,11 @@ namespace ribomation::io {
     void CoroRuntime::run() {
         while (true) {
             auto handle = std::coroutine_handle<>{};
+
             {
                 auto guard = std::unique_lock{sched.entry};
-                sched.not_empty.wait(guard, [this] {
-                    return not sched.readyq.empty() || active_tasks.load() == 0U;
-                });
-                if (sched.readyq.empty() && active_tasks.load() == 0U) break;
+                sched.not_empty.wait(guard, [this] { return has_more_work(); });
+                if (no_more_work()) return; //when active_tasks==0
 
                 handle = sched.readyq.front();
                 sched.readyq.pop();

@@ -22,13 +22,12 @@ namespace ribomation::io {
             if (not file) throw std::invalid_argument{"cannot open " + filename.string()};
         }
 
-        struct NextLineAwaitable {
+        class NextLineAwaitable {
             struct State {
                 std::optional<std::string> line{};
                 std::exception_ptr error{};
                 bool eof = false;
             };
-
             std::shared_ptr<State> state = std::make_shared<State>();
 
             std::ifstream& file;

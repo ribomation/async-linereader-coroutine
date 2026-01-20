@@ -21,14 +21,14 @@ namespace ribomation::io {
         LivenessToken() = default;
         explicit LivenessToken(CoroRuntime* runtime);
         ~LivenessToken();
-        
+
         LivenessToken(LivenessToken const&) = delete;
         auto operator=(LivenessToken const&) -> LivenessToken& = delete;
-        
+
         LivenessToken(LivenessToken&& rhs) noexcept
-        : runtime{ std::exchange(rhs.runtime, nullptr)} {}
-        
-        auto operator=(LivenessToken && rhs) noexcept -> LivenessToken& {
+            : runtime{std::exchange(rhs.runtime, nullptr)} {}
+
+        auto operator=(LivenessToken&& rhs) noexcept -> LivenessToken& {
             if (this != &rhs) {
                 this->~LivenessToken();
                 runtime = std::exchange(rhs.runtime, nullptr);
@@ -53,6 +53,14 @@ namespace ribomation::io {
         std::unordered_map<SpawnedKeyType, SpawnedEntry> spawned{};
         std::mutex entry{};
 
+        bool has_more_work() const {
+            return not sched.is_empty() || active_tasks.load() == 0U;
+        }
+
+        bool no_more_work() const {
+            return active_tasks.load() == 0U && sched.is_empty();
+        }
+
     public:
         explicit CoroRuntime(unsigned num_workers = std::thread::hardware_concurrency())
             : pool{num_workers} {}
@@ -68,6 +76,7 @@ namespace ribomation::io {
         void acquire_liveness() {
             active_tasks.fetch_add(1U, std::memory_order_relaxed);
         }
+
         void release_liveness() {
             active_tasks.fetch_sub(1U, std::memory_order_relaxed);
             sched.not_empty.notify_all();
@@ -81,5 +90,4 @@ namespace ribomation::io {
     inline LivenessToken::~LivenessToken() {
         if (runtime != nullptr) runtime->release_liveness();
     }
-
 }

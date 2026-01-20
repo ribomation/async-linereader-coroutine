@@ -9,6 +9,7 @@
 
 
 namespace ribomation::io {
+
     class TaskPool {
         std::mutex entry{};
         std::condition_variable not_empty{};
@@ -45,4 +46,5 @@ namespace ribomation::io {
     private:
         void worker_loop();
     };
+
 }

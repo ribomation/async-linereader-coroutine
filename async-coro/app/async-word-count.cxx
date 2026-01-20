@@ -2,6 +2,8 @@
 #include <print>
 #include <string_view>
 #include <vector>
+#include <ranges>
+#include <algorithm>
 #include <cctype>
 
 #include "coro-runtime.hxx"
@@ -9,6 +11,7 @@
 #include "coro-task.hxx"
 
 namespace fs = std::filesystem;
+namespace r = std::ranges;
 namespace io = ribomation::io;
 
 class Count {
@@ -25,6 +28,8 @@ public:
         words += words_of(line);
         chars += chars_of(line);
     }
+
+    auto get_filename() const noexcept -> fs::path const& { return filename; }
 
     static auto header() -> std::string {
         return std::format("{:25} {:5} {:>7} {:>8}", "filename", "lines", "words", "chars");
@@ -61,8 +66,15 @@ private:
 class Results {
     std::vector<Count> results{};
 public:
-    void push(Count cnt) { results.push_back(std::move(cnt)); }
-    auto get() -> std::vector<Count> { return std::move(results); }
+    void push(Count cnt) {
+        results.push_back(std::move(cnt));
+    }
+    auto get() -> std::vector<Count> {
+        r::sort(results, [](auto& lhs, auto& rhs) {
+            return lhs.get_filename().string() < rhs.get_filename().string();
+        });
+        return std::move(results);
+    }
 };
 
 auto CountFile(fs::path filename, Results& res, io::CoroRuntime& rt) -> io::TaskCoroutine<void> {
