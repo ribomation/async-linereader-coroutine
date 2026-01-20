@@ -1,17 +1,11 @@
-
-add_library(sync-thread STATIC)
-target_sources(sync-thread PRIVATE
-    lib/file-reader.hxx
-    lib/file-reader.cxx
+add_library(sync-file-reader STATIC
+        lib/file-reader.hxx
+        lib/file-reader.cxx
 )
-target_include_directories(sync-thread PUBLIC lib)
+target_include_directories(sync-file-reader PUBLIC lib)
 
 
-add_executable(read-several-files )
-target_sources(read-several-files PRIVATE
-        app/read-several-files.cxx
+add_executable(sync-word-count
+        app/sync-word-count.cxx
 )
-target_link_libraries(read-several-files PRIVATE sync-thread)
-
-
-
+target_link_libraries(sync-word-count PRIVATE sync-file-reader)

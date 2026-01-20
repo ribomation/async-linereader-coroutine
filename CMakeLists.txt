@@ -11,5 +11,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_options(-Wall -Wextra -Wconversion -Wshadow -Werror -Wfatal-errors -fdiagnostics-all-candidates)
 
 add_subdirectory(sync-thread)
-
+add_subdirectory(async-coro)
 

@@ -17,7 +17,7 @@ class Count {
     unsigned chars{};
 
 public:
-    explicit Count(fs::path filename_) : filename{std::move(filename_)} {}
+    explicit Count(fs::path const& filename_) : filename{std::move(filename_)} {}
 
     void count() {
         auto reader = io::FileReader{filename};
